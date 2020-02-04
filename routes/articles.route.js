@@ -2,17 +2,22 @@ const articlesRouter = require("express").Router();
 const {
   getArticles,
   getArticle,
-  patchVotes,
+  patchArticleVotes,
   postComment,
   getComments
 } = require("../controllers/articles.controllers");
 
-articlesRouter.route("/").get(getArticles);
+const { methodNotAllowed } = require("../errors/error_functions");
+
+articlesRouter
+  .route("/")
+  .get(getArticles)
+  .all(methodNotAllowed);
 
 articlesRouter
   .route("/:article_id")
   .get(getArticle)
-  .patch(patchVotes);
+  .patch(patchArticleVotes);
 
 articlesRouter
   .route("/:article_id/comments")

@@ -180,4 +180,88 @@ describe("/api", () => {
       });
     });
   });
+  describe("/comments", () => {
+    describe("/:comment_id", () => {
+      it("PATCH: 200 accepts a vote increment object and responds with comment after updating its votes property to reflect increment", () => {
+        return request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: -1 })
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comment).to.have.keys(
+              "article_id",
+              "comment_id",
+              "votes",
+              "created_at",
+              "author",
+              "body"
+            );
+          });
+      });
+      it("DELETE: 204 deletes the given comment and responds with no content", () => {
+        return request(app)
+          .delete("/api/comments/1")
+          .expect(204);
+      });
+    });
+  });
+  describe.only("ERRORS", () => {
+    describe("/", () => {
+      it("GET: 404 responds with Not Found for inexistent routes", () => {
+        return request(app)
+          .get("/not-a-route")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Not found");
+          });
+      });
+    });
+    describe("/api/articles", () => {
+      it("PATCH,PUT,DELETE: reponds with 405 and method not allowed when an unsupported request is made", () => {
+        return request(app)
+          .post("/api/articles")
+          .send({ article: ["article"] })
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).eql("Method not allowed");
+          });
+      });
+    });
+    describe("/api/topics", () => {
+      it("PATCH,PUT,DELETE: reponds with 405 and method not allowed when an unsupported request is made", () => {
+        return request(app)
+          .post("/api/topics")
+          .send({ topic: ["topic"] })
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).eql("Method not allowed");
+          });
+      });
+      it("GET 200 ignores a query that does not exist", () => {
+        return request(app)
+          .get("/api/topics?slug=paper&sort_by=description")
+          .expect(200);
+      });
+    });
+    describe("/api/users/:username", () => {
+      it("GET 404reposnds with not found when username doesn't exist", () => {
+        return request(app)
+          .get("/api/users/test_username_xyz")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Not found");
+          });
+      });
+    });
+    describe("/api/articles/:article_id", () => {
+      it("GET 400: an invalid article id responds with bad request", () => {
+        return request(app)
+          .get("/api/articles/string")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Invalid_text_representation");
+          });
+      });
+    });
+  });
 });

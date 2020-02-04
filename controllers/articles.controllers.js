@@ -1,10 +1,10 @@
 const {
   fetchArticles,
   fetchArticle,
-  updateVotes,
-  insertComment,
-  fetchComments
+  updateArticleVotes
 } = require("../models/articles.models");
+
+const { insertComment, fetchComments } = require("../models/comments.models");
 
 exports.getArticles = (req, res, next) => {
   const { sort_by, order, author, topic } = req.query;
@@ -15,15 +15,17 @@ exports.getArticles = (req, res, next) => {
 
 exports.getArticle = (req, res, next) => {
   const { article_id } = req.params;
-  fetchArticle(article_id).then(article => {
-    res.status(200).send(article);
-  });
+  fetchArticle(article_id)
+    .then(article => {
+      res.status(200).send(article);
+    })
+    .catch(err => next(err));
 };
 
-exports.patchVotes = (req, res, next) => {
+exports.patchArticleVotes = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
-  updateVotes(article_id, inc_votes).then(article => {
+  updateArticleVotes(article_id, inc_votes).then(article => {
     res.status(200).send(article);
   });
 };
