@@ -40,3 +40,22 @@ exports.updateVotes = (article_id, inc_votes) => {
       return { article: article[0] };
     });
 };
+
+exports.insertComment = (article_id, comment) => {
+  comment.article_id = article_id;
+  comment.author = comment.username;
+  delete comment.username;
+
+  return connection
+    .insert(comment)
+    .into("comments")
+    .where({ article_id })
+    .returning("*")
+    .then(comment => {
+      return { comment: comment[0] };
+    });
+};
+
+exports.fetchComments = article_id => {
+  return connection("comments").where({ article_id });
+};

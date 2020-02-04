@@ -8,12 +8,8 @@ const request = require("supertest");
 const connection = require("../db/connection");
 
 describe("/api", () => {
+  beforeEach(() => connection.seed.run());
   after(() => connection.destroy());
-
-  beforeEach(() => {
-    return connection.seed.run();
-  });
-
   describe("/topics", () => {
     it("GET 200: Responds with all topics in correct format", () => {
       return request(app)
@@ -44,7 +40,7 @@ describe("/api", () => {
     });
   });
 
-  describe.only("/articles/:article_id", () => {
+  describe("/articles/:article_id", () => {
     it("GET 200: responds with an article onject in the correct format", () => {
       return request(app)
         .get("/api/articles/1")
@@ -62,7 +58,7 @@ describe("/api", () => {
           );
         });
     });
-    it.only("PATCH 200: accepts a inc_votes object, updates the votes property and responds with the updated article", () => {
+    it("PATCH 200: accepts a inc_votes object, updates the votes property and responds with the updated article", () => {
       return request(app)
         .patch("/api/articles/1")
         .send({ inc_votes: 1 })
@@ -79,6 +75,41 @@ describe("/api", () => {
             "comment_count"
           );
         });
+    });
+    describe("/comments", () => {
+      it("POST 201: accepts a valid comment, posts it, and responds with it", () => {
+        return request(app)
+          .post("/api/articles/1/comments")
+          .send({ username: "lurker", body: "testing..." })
+          .expect(201)
+          .then(({ body }) => {
+            expect(body.comment).to.have.keys(
+              "comment_id",
+              "author",
+              "article_id",
+              "votes",
+              "created_at",
+              "body"
+            );
+          });
+      });
+      it("GET 200: responds with an array of comments for given article_id", () => {
+        return request(app)
+          .get("/api/articles/1/comments")
+          .expect(200)
+          .then(({ body }) => {
+            body.comments.forEach(comment => {
+              expect(comment).have.keys(
+                "comment_id",
+                "author",
+                "article_id",
+                "votes",
+                "created_at",
+                "body"
+              );
+            });
+          });
+      });
     });
   });
 });
