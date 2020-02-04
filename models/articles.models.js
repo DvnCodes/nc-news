@@ -1,5 +1,34 @@
 const connection = require("../db/connection");
 
+exports.fetchArticles = (
+  sort_by = "created_at",
+  order = "desc",
+  author,
+  topic
+) => {
+  return connection("articles")
+    .returning("*")
+    .modify(chain => {
+      if (author) {
+        return chain.where({ author });
+      }
+      if (topic) {
+        return chain.where({ topic });
+      }
+    })
+    .orderBy(sort_by, order)
+    .then(articles => {
+      articles.forEach(article => {
+        const id = article.article_id;
+        comment_count = exports.fetchCommentsByArticleID(id);
+        article.comment_count = comment_count;
+        delete article.body;
+      });
+
+      return { articles: articles };
+    });
+};
+
 exports.fetchCommentsByArticleID = id => {
   return connection
     .select()
@@ -56,6 +85,12 @@ exports.insertComment = (article_id, comment) => {
     });
 };
 
-exports.fetchComments = article_id => {
-  return connection("comments").where({ article_id });
+exports.fetchComments = (
+  article_id,
+  sort_by = "created_at",
+  order = "desc"
+) => {
+  return connection("comments")
+    .where({ article_id })
+    .orderBy(sort_by, order);
 };
