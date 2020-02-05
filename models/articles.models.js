@@ -36,6 +36,9 @@ exports.fetchArticle = id => {
     .table("articles")
     .where("article_id", "=", id)
     .then(article => {
+      if (!article.length) {
+        return Promise.reject({ status: 404, msg: "Not found" });
+      }
       return Promise.all([article, fetchCommentsByArticleID(id)]);
     })
     .then(([article, comments]) => {
@@ -55,5 +58,18 @@ exports.updateArticleVotes = (article_id, inc_votes) => {
     .then(([article, comments]) => {
       article[0].comment_count = comments.length;
       return { article: article[0] };
+    });
+};
+
+exports.articleExists = id => {
+  return connection
+    .select()
+    .table("articles")
+    .where("article_id", "=", id)
+    .then(article => {
+      if (article.length) {
+        return true;
+      }
+      return false;
     });
 };

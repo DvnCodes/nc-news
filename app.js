@@ -12,13 +12,12 @@ app.all("*", (req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  if (err.code) {
-    // psqlErrors(err).then(err => {
-    //   console.log("xxxxxxxxx");
-    //   res.status(err.status).send({ msg: err.msg });
-    // });
-    res.status(400).send({ msg: "Invalid_text_representation" });
+  console.log(err);
+
+  if (err.code !== undefined) {
+    err = psqlErrors(err.code);
   }
+
   if (err.status) {
     res.status(err.status).send({ msg: err.msg });
   }

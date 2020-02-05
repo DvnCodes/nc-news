@@ -205,6 +205,12 @@ describe("/api", () => {
       });
     });
   });
+
+  //ERRORS
+  //  |
+  //  |
+  //  |
+  //  V
   describe.only("ERRORS", () => {
     describe("/", () => {
       it("GET: 404 responds with Not Found for inexistent routes", () => {
@@ -225,6 +231,9 @@ describe("/api", () => {
           .then(({ body }) => {
             expect(body.msg).eql("Method not allowed");
           });
+      });
+      it("GET 400: responds with bad request when an", () => {
+        return request(app).get("/api/article");
       });
     });
     describe("/api/topics", () => {
@@ -259,9 +268,92 @@ describe("/api", () => {
           .get("/api/articles/string")
           .expect(400)
           .then(({ body }) => {
-            expect(body.msg).to.eql("Invalid_text_representation");
+            expect(body.msg).to.eql("Invalid text representation");
           });
       });
+      it("GET 404: an inexistent article responds with not found", () => {
+        return request(app)
+          .get("/api/articles/99999")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Not found");
+          });
+      });
+      it("PATCH 400: responds with bad request when req does not contain an inc_votes property on body", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ vote: 1 })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Bad request");
+          });
+      });
+      it("PATCH 200: ignores invalid properties on request as long as inc_votes is valid", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 1, name: "mitch" })
+          .expect(200);
+      });
+      it("PATCH 400: responds with bad request when inc_votes value is invalid", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: "cat" })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Invalid text representation");
+          });
+      });
+    });
+    describe("/api/articles/:article_id/comments", () => {
+      it("POST 404: responds with not found if article does not exist", () => {
+        return request(app)
+          .post("/api/9999/comments")
+          .send({
+            username: "NorthCoder94",
+            body: "this should be an error..."
+          })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Not found");
+          });
+      });
+      it("POST 400: responds with bad request if post does not contain valid username or body property", () => {
+        return request(app)
+          .post("/api/articles/1/comments")
+          .send({ username: "lurker", notBody: "should not work" })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Bad request");
+          });
+      });
+      it("POST 404: responds with msg when sent a valid string as username property, but user does not exist ", () => {
+        return request(app)
+          .post("/api/articles/1/comments")
+          .send({
+            username: "john smith",
+            body: "I'm having an existential crisis"
+          })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("User does not exist");
+          });
+      });
+      it("GET 200: When there are no comments on an article, responds with empty comments object", () => {
+        return request(app)
+          .get("/api/articles/2/comments")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body).to.eql({ comments: [] });
+          });
+      });
+      // it("GET 404: when the article does not exist, responds with 404 not found error", () => {
+      //   return request(app)
+      //     .get("/api/articles/9999999/comments")
+      //     .expect(404)
+      //     .then(({ body }) => {
+      //       expect(body.msg).to.eql("Article not found");
+      //     });
+      // });
     });
   });
 });

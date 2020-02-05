@@ -1,4 +1,6 @@
 const connection = require("../db/connection");
+const { fetchUser } = require("../models/users.models");
+const { fetchArticle } = require("../models/articles.models");
 
 exports.fetchCommentsByArticleID = id => {
   return connection
@@ -11,6 +13,9 @@ exports.fetchCommentsByArticleID = id => {
 };
 
 exports.insertComment = (article_id, comment) => {
+  if (!fetchUser(comment.username).user) {
+    return Promise.reject({ status: 404, msg: "User does not exist" });
+  }
   comment.article_id = article_id;
   comment.author = comment.username;
   delete comment.username;
@@ -30,6 +35,9 @@ exports.fetchComments = (
   sort_by = "created_at",
   order = "desc"
 ) => {
+  // if (fetchArticle(article_id)) {
+  //   return Promise.reject({ status: 404, msg: "Article not found" });
+  // }
   return connection("comments")
     .where({ article_id })
     .orderBy(sort_by, order);
