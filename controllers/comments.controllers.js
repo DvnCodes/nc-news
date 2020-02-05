@@ -6,9 +6,11 @@ const {
 exports.patchCommentVotes = (req, res, next) => {
   const { comment_id } = req.params;
   const { inc_votes } = req.body;
+  if (inc_votes === undefined) {
+    return next({ status: 400, msg: "Bad request" });
+  }
   updateCommentVotes(inc_votes, comment_id)
     .then(comment => {
-      console.log(comment);
       res.status(200).send(comment);
     })
     .catch(err => next(err));
@@ -17,6 +19,11 @@ exports.patchCommentVotes = (req, res, next) => {
 exports.deleteComment = (req, res, next) => {
   const { comment_id } = req.params;
   removeComment(comment_id)
-    .then(response => res.status(204).send())
+    .then(response => {
+      if (response === 0) {
+        return next({ status: 404, msg: "Comment not found" });
+      }
+      res.status(204).send();
+    })
     .catch(err => next(err));
 };

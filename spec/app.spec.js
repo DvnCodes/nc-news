@@ -232,8 +232,34 @@ describe("/api", () => {
             expect(body.msg).eql("Method not allowed");
           });
       });
-      it("GET 400: responds with bad request when an", () => {
-        return request(app).get("/api/article");
+      it("GET 400: responds with psql error msg when a sort_by that does not exist is passed", () => {
+        return request(app)
+          .get("/api/articles?sort_by=banana")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Undefined column");
+          });
+      });
+      it("GET 200: reverts to default order when order query is not asc or desc", () => {
+        return request(app)
+          .get("/api/articles?order=banana")
+          .expect(200);
+      });
+      it("GET 404: responds with not found when querying an author that does not exist", () => {
+        return request(app)
+          .get("/api/articles?author=bananaman")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Author does not exist");
+          });
+      });
+      it("GET 200: responds with article object with relevant message and no error when no articles exist by queried author", () => {
+        return request(app)
+          .get("/api/articles?author=lurker")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.articles).to.eql("No articles found by user");
+          });
       });
     });
     describe("/api/topics", () => {
@@ -253,7 +279,7 @@ describe("/api", () => {
       });
     });
     describe("/api/users/:username", () => {
-      it("GET 404reposnds with not found when username doesn't exist", () => {
+      it("GET 404: responds with not found when username doesn't exist", () => {
         return request(app)
           .get("/api/users/test_username_xyz")
           .expect(404)
@@ -346,14 +372,48 @@ describe("/api", () => {
             expect(body).to.eql({ comments: [] });
           });
       });
-      // it("GET 404: when the article does not exist, responds with 404 not found error", () => {
-      //   return request(app)
-      //     .get("/api/articles/9999999/comments")
-      //     .expect(404)
-      //     .then(({ body }) => {
-      //       expect(body.msg).to.eql("Article not found");
-      //     });
-      // });
+      it("GET 404: when the article does not exist, responds with 404 not found error", () => {
+        return request(app)
+          .get("/api/articles/9999999/comments")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Article not found");
+          });
+      });
+    });
+    describe.only("/api/comments/:comment_id", () => {
+      it('PATCH 400: responds with bad request when req does not contain an inc_votes property on body"', () => {
+        return request(app)
+          .patch("/api/comments/1")
+          .send({ vote: 1 })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Bad request");
+          });
+      });
+      it("PATCH 200: ignores invalid properties on request as long as inc_votes is valid", () => {
+        return request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: 1, name: "mitch" })
+          .expect(200);
+      });
+      it("PATCH 400: responds with bad request when inc_votes value is invalid", () => {
+        return request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: "cat" })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Invalid text representation");
+          });
+      });
+      it("DELETE 404: responds with relevant message when comment to be deleted does not exist", () => {
+        return request(app)
+          .delete("/api/comments/99999")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Comment not found");
+          });
+      });
     });
   });
 });

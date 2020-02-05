@@ -1,5 +1,6 @@
 const connection = require("../db/connection");
 const { fetchCommentsByArticleID } = require("../models/comments.models");
+const { userExists } = require("../models/users.models");
 
 exports.fetchArticles = (
   sort_by = "created_at",
@@ -7,6 +8,10 @@ exports.fetchArticles = (
   author,
   topic
 ) => {
+  if (order !== ("asc" || "desc")) {
+    order = "desc";
+  }
+
   return connection("articles")
     .returning("*")
     .modify(chain => {
@@ -19,13 +24,21 @@ exports.fetchArticles = (
     })
     .orderBy(sort_by, order)
     .then(articles => {
+      //   return Promise.all([articles, userExists(author)]);
+      // })
+      // .then(([articles, bool]) => {
+      //   if (!bool) {
+      //     return Promise.reject({ status: 404, msg: "Author does not exist" });
+      //   }
+      //   if (bool && !articles.length) {
+      //     return { articles: "No articles found by user" };
+      //   }
       articles.forEach(article => {
         const id = article.article_id;
         comment_count = fetchCommentsByArticleID(id);
         article.comment_count = comment_count;
         delete article.body;
       });
-
       return { articles: articles };
     });
 };

@@ -9,3 +9,16 @@ exports.fetchUser = username => {
       return { user: user[0] };
     });
 };
+
+exports.userExists = username => {
+  return connection
+    .select()
+    .table("users")
+    .where({ username })
+    .then(user => {
+      if (user.length) {
+        return true;
+      }
+      return false;
+    });
+};

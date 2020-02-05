@@ -1,6 +1,6 @@
 const connection = require("../db/connection");
 const { fetchUser } = require("../models/users.models");
-const { fetchArticle } = require("../models/articles.models");
+const { articleExists } = require("../models/articles.models");
 
 exports.fetchCommentsByArticleID = id => {
   return connection
@@ -35,9 +35,6 @@ exports.fetchComments = (
   sort_by = "created_at",
   order = "desc"
 ) => {
-  // if (fetchArticle(article_id)) {
-  //   return Promise.reject({ status: 404, msg: "Article not found" });
-  // }
   return connection("comments")
     .where({ article_id })
     .orderBy(sort_by, order);
@@ -56,5 +53,6 @@ exports.updateCommentVotes = (inc_votes, comment_id) => {
 exports.removeComment = comment_id => {
   return connection("comments")
     .where({ comment_id })
-    .del();
+    .del()
+    .then(deletedRows => deletedRows);
 };

@@ -3,10 +3,12 @@ exports.methodNotAllowed = (req, res, next) => {
 };
 
 exports.psqlErrors = code => {
-  console.log("using psql error handler........");
+  console.log(code);
 
   const errors = {
-    "22P02": { status: 400, msg: "Invalid text representation" }
+    "22P02": { status: 400, msg: "Invalid text representation" },
+    "42703": { status: 400, msg: "Undefined column" }
   };
+
   return errors[code];
 };

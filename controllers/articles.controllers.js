@@ -57,13 +57,12 @@ exports.getComments = (req, res, next) => {
 
   fetchComments(article_id, sort_by, order)
     .then(comments => {
-      console.log(articleExists(article_id));
-
-      if (!comments.length && articleExists(article_id) === false) {
-        next({ status: 404, msg: "Article not found" });
-      }
-
-      res.status(200).send({ comments: comments });
+      articleExists(article_id).then(bool => {
+        if (!bool && !comments.length) {
+          return next({ status: 404, msg: "Article not found" });
+        }
+        res.status(200).send({ comments: comments });
+      });
     })
     .catch(err => next(err));
 };
