@@ -6,13 +6,21 @@ const { expect } = chai;
 const app = require("../app");
 const request = require("supertest");
 const connection = require("../db/connection");
+const description = require("../endpoints.json");
 
 describe("/api", () => {
   beforeEach(() => connection.seed.run());
   after(() => {
     connection.destroy();
   });
-
+  it("GET 200: responds with a description of all availbale endpoints in the api", () => {
+    return request(app)
+      .get("/api")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.description).to.eql(description);
+      });
+  });
   describe("/topics", () => {
     it("GET 200: Responds with all topics in correct format", () => {
       return request(app)
@@ -140,11 +148,13 @@ describe("/api", () => {
               );
             });
         });
-        it("GET 200: responds with an array of comments for given article_id, sorted by created_at by default, ordered desc by default", () => {
+        it.only("GET 200: responds with an array of comments for given article_id, sorted by created_at by default, ordered desc by default", () => {
           return request(app)
             .get("/api/articles/1/comments")
             .expect(200)
             .then(({ body }) => {
+              console.log(JSON.stringify(body));
+
               body.comments.forEach(comment => {
                 expect(comment).have.keys(
                   "comment_id",
