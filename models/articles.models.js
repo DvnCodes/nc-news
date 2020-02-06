@@ -1,6 +1,7 @@
 const connection = require("../db/connection");
 const { fetchCommentsByArticleID } = require("../models/comments.models");
 const { userExists } = require("../models/users.models");
+const { topicExists } = require("../models/topics.models");
 
 exports.fetchArticles = (
   sort_by = "created_at",
@@ -8,10 +9,9 @@ exports.fetchArticles = (
   author,
   topic
 ) => {
-  if (order !== ("asc" || "desc")) {
+  if (order !== "asc" && order !== "desc") {
     order = "desc";
   }
-
   return connection("articles")
     .returning("*")
     .modify(chain => {
@@ -24,15 +24,31 @@ exports.fetchArticles = (
     })
     .orderBy(sort_by, order)
     .then(articles => {
-      //   return Promise.all([articles, userExists(author)]);
-      // })
-      // .then(([articles, bool]) => {
-      //   if (!bool) {
-      //     return Promise.reject({ status: 404, msg: "Author does not exist" });
-      //   }
-      //   if (bool && !articles.length) {
-      //     return { articles: "No articles found by user" };
-      //   }
+      if (!articles.length) {
+        if (author) {
+          return userExists(author).then(bool => {
+            if (!bool) {
+              return Promise.reject({
+                status: 404,
+                msg: "Author does not exist"
+              });
+            }
+            return { articles: "No articles found by user" };
+          });
+        }
+        if (topic) {
+          return topicExists(topic).then(bool => {
+            if (!bool) {
+              return Promise.reject({
+                status: 404,
+                msg: "Topic does not exist"
+              });
+            }
+            return { articles: "No articles found by topic" };
+          });
+        }
+      }
+
       articles.forEach(article => {
         const id = article.article_id;
         comment_count = fetchCommentsByArticleID(id);

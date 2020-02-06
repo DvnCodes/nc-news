@@ -9,7 +9,9 @@ const connection = require("../db/connection");
 
 describe("/api", () => {
   beforeEach(() => connection.seed.run());
-  after(() => connection.destroy());
+  after(() => {
+    connection.destroy();
+  });
 
   describe("/topics", () => {
     it("GET 200: Responds with all topics in correct format", () => {
@@ -211,7 +213,7 @@ describe("/api", () => {
   //  |
   //  |
   //  V
-  describe.only("ERRORS", () => {
+  describe("ERRORS", () => {
     describe("/", () => {
       it("GET: 404 responds with Not Found for inexistent routes", () => {
         return request(app)
@@ -240,17 +242,27 @@ describe("/api", () => {
             expect(body.msg).to.eql("Undefined column");
           });
       });
+
       it("GET 200: reverts to default order when order query is not asc or desc", () => {
         return request(app)
           .get("/api/articles?order=banana")
           .expect(200);
       });
+
       it("GET 404: responds with not found when querying an author that does not exist", () => {
         return request(app)
           .get("/api/articles?author=bananaman")
           .expect(404)
           .then(({ body }) => {
             expect(body.msg).to.eql("Author does not exist");
+          });
+      });
+      it("GET 404: responds with not found when querying a topic that does not exist", () => {
+        return request(app)
+          .get("/api/articles?topic=bananas")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Topic does not exist");
           });
       });
       it("GET 200: responds with article object with relevant message and no error when no articles exist by queried author", () => {
@@ -381,7 +393,7 @@ describe("/api", () => {
           });
       });
     });
-    describe.only("/api/comments/:comment_id", () => {
+    describe("/api/comments/:comment_id", () => {
       it('PATCH 400: responds with bad request when req does not contain an inc_votes property on body"', () => {
         return request(app)
           .patch("/api/comments/1")

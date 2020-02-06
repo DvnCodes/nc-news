@@ -8,3 +8,16 @@ exports.fetchTopics = () => {
       return { topics: topics };
     });
 };
+
+exports.topicExists = slug => {
+  return connection
+    .select()
+    .table("topics")
+    .where({ slug })
+    .then(topic => {
+      if (topic.length) {
+        return true;
+      }
+      return false;
+    });
+};
