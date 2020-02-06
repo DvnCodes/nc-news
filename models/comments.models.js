@@ -41,6 +41,9 @@ exports.updateCommentVotes = (inc_votes = 0, comment_id) => {
     .increment("votes", inc_votes)
     .returning("*")
     .then(comment => {
+      if (!comment.length) {
+        return Promise.reject({ status: 404, msg: "Comment does not exist" });
+      }
       return { comment: comment[0] };
     });
 };

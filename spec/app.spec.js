@@ -148,12 +148,12 @@ describe("/api", () => {
               );
             });
         });
-        it.only("GET 200: responds with an array of comments for given article_id, sorted by created_at by default, ordered desc by default", () => {
+        it("GET 200: responds with an array of comments for given article_id, sorted by created_at by default, ordered desc by default", () => {
           return request(app)
             .get("/api/articles/1/comments")
             .expect(200)
             .then(({ body }) => {
-              console.log(JSON.stringify(body));
+              // console.log(JSON.stringify(body));
 
               body.comments.forEach(comment => {
                 expect(comment).have.keys(
@@ -195,6 +195,12 @@ describe("/api", () => {
   });
   describe("/comments", () => {
     describe("/:comment_id", () => {
+      it("PATCH 400: returns an error when an invalid comment id is passed", () => {
+        return request(app)
+          .patch("/api/comments/invalid")
+          .send({ inc_votes: -1 })
+          .expect(400);
+      });
       it("PATCH: 200 accepts a vote increment object and responds with comment after updating its votes property to reflect increment", () => {
         return request(app)
           .patch("/api/comments/1")
@@ -391,7 +397,10 @@ describe("/api", () => {
         return request(app)
           .patch("/api/comments/99999")
           .send({})
-          .expect(404);
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.eql("Comment does not exist");
+          });
       });
       it("PATCH 400: responds with bad request when inc_votes value is invalid", () => {
         return request(app)

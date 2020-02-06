@@ -11,17 +11,19 @@ exports.patchCommentVotes = (req, res, next) => {
   if (inc_votes && typeof inc_votes !== "number") {
     return next({ status: 400, msg: "Bad request" });
   }
-  updateCommentVotes(inc_votes, comment_id).then(comment => {
-    commentExists(comment_id)
-      .then(bool => {
-        if (!bool && !comment.length) {
-          return next({ status: 404, msg: "Comment not found" });
-        }
-
-        res.status(200).send(comment);
-      })
-      .catch(err => next(err));
-  });
+  updateCommentVotes(inc_votes, comment_id)
+    .then(comment => {
+      res.status(200).send(comment);
+      // commentExists(comment_id)
+      //   .then(bool => {
+      //     if (!bool && !comment.length) {
+      //       return next({ status: 404, msg: "Comment not found" });
+      //     }
+      //
+      //   })
+      //   ;
+    })
+    .catch(err => next(err));
 };
 
 exports.deleteComment = (req, res, next) => {

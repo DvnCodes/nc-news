@@ -12,6 +12,8 @@ app.all("*", (req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+  console.log(err);
+
   //if the error is in the psql format send it to the error handler for this
   if (err.code !== undefined) {
     err = psqlErrors(err.code);
