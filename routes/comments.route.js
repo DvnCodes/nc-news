@@ -4,9 +4,12 @@ const {
   deleteComment
 } = require("../controllers/comments.controllers");
 
+const { methodNotAllowed } = require("../errors/error_functions");
+
 commentsRouter
   .route("/:comment_id")
   .patch(patchCommentVotes)
-  .delete(deleteComment);
+  .delete(deleteComment)
+  .put(methodNotAllowed);
 
 module.exports = commentsRouter;

@@ -13,15 +13,20 @@ exports.fetchArticles = (
   if (order !== "asc" && order !== "desc") {
     order = "desc";
   }
-  return connection("articles")
-    .returning("*")
+
+  return connection
+    .select("articles.*")
+    .from("articles")
+    .count({ comment_count: "comment_id" })
+    .leftJoin("comments", "articles.article_id", "comments.article_id")
+    .groupBy("articles.article_id")
     .modify(chain => {
       //modify the chain to add .where for queries
-      if (author) {
-        return chain.where({ author });
+      if (author !== undefined) {
+        chain.where("username" === author);
       }
-      if (topic) {
-        return chain.where({ topic });
+      if (topic !== undefined) {
+        chain.andWhere({ topic });
       }
     }) //sort using queries or defaults
     .orderBy(sort_by, order)
@@ -40,7 +45,8 @@ exports.fetchArticles = (
               });
             }
             //otherwise they do exist but have not posted any articles, so send non-error message
-            return { articles: "No articles found by user" };
+            // return { articles: ["No articles found by user" ]};
+            return { articles: [] };
           });
         }
         if (topic) {
@@ -52,17 +58,14 @@ exports.fetchArticles = (
                 msg: "Topic does not exist"
               });
             }
-            return { articles: "No articles found by topic" };
+            return { articles: [] };
           });
         }
       }
-
       articles.forEach(article => {
-        //for each article, add a comment count using a model and delete body
-        //this could be refactored to use aggregate functions on the sql query
-        const id = article.article_id;
-        comment_count = fetchCommentsByArticleID(id);
-        article.comment_count = comment_count;
+        //   const id = article.article_id;
+        //   comment_count = fetchCommentsByArticleID(id);
+        //   article.comment_count = comment_count;
         delete article.body;
       });
       return { articles: articles };
@@ -89,7 +92,7 @@ exports.fetchArticle = id => {
     });
 };
 
-exports.updateArticleVotes = (article_id, inc_votes) => {
+exports.updateArticleVotes = (article_id, inc_votes = 0) => {
   return connection("articles")
     .where({ article_id })
     .increment("votes", inc_votes)

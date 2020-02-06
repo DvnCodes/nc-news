@@ -35,7 +35,7 @@ exports.fetchComments = (
     .orderBy(sort_by, order);
 };
 
-exports.updateCommentVotes = (inc_votes, comment_id) => {
+exports.updateCommentVotes = (inc_votes = 0, comment_id) => {
   return connection("comments")
     .where({ comment_id })
     .increment("votes", inc_votes)
@@ -50,4 +50,17 @@ exports.removeComment = comment_id => {
     .where({ comment_id })
     .del()
     .then(deletedRows => deletedRows);
+};
+
+exports.commentExists = id => {
+  return connection
+    .select()
+    .table("comments")
+    .where("comment_id", "=", id)
+    .then(comment => {
+      if (comment.length) {
+        return true;
+      }
+      return false;
+    });
 };

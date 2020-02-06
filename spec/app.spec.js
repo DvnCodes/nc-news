@@ -58,6 +58,7 @@ describe("/api", () => {
               "comment_count"
             );
           });
+          expect(body.articles[0].comment_count).to.eql("13");
           expect(body.articles).to.be.descendingBy("created_at");
         });
     });
@@ -224,6 +225,13 @@ describe("/api", () => {
           });
       });
     });
+    describe("/api", () => {
+      it("DELETE 405: responds with method not allowed", () => {
+        return request(app)
+          .delete("/api")
+          .expect(405);
+      });
+    });
     describe("/api/articles", () => {
       it("PATCH,PUT,DELETE: reponds with 405 and method not allowed when an unsupported request is made", () => {
         return request(app)
@@ -265,12 +273,20 @@ describe("/api", () => {
             expect(body.msg).to.eql("Topic does not exist");
           });
       });
-      it("GET 200: responds with article object with relevant message and no error when no articles exist by queried author", () => {
+      it("GET 200: responds with empty array and no error when no articles exist by queried author", () => {
         return request(app)
           .get("/api/articles?author=lurker")
           .expect(200)
           .then(({ body }) => {
-            expect(body.articles).to.eql("No articles found by user");
+            expect(body.articles).to.eql([]);
+          });
+      });
+      it("GET 200: responds with empty array and no error when no articles exist by queried topic", () => {
+        return request(app)
+          .get("/api/articles?topic=paper")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.articles).to.eql([]);
           });
       });
     });
@@ -291,6 +307,12 @@ describe("/api", () => {
       });
     });
     describe("/api/users/:username", () => {
+      it("PUT 405: reponds with method not allowed", () => {
+        return request(app)
+          .put("/api/users/butter_bridge")
+          .send({})
+          .expect(405);
+      });
       it("GET 404: responds with not found when username doesn't exist", () => {
         return request(app)
           .get("/api/users/test_username_xyz")
@@ -301,6 +323,11 @@ describe("/api", () => {
       });
     });
     describe("/api/articles/:article_id", () => {
+      it("PUT 405: expect method not allowed when put request is made", () => {
+        return request(app)
+          .put("/api/articles/1")
+          .expect(405);
+      });
       it("GET 400: an invalid article id responds with bad request", () => {
         return request(app)
           .get("/api/articles/string")
@@ -317,13 +344,31 @@ describe("/api", () => {
             expect(body.msg).to.eql("Not found");
           });
       });
-      it("PATCH 400: responds with bad request when req does not contain an inc_votes property on body", () => {
+      // it("PATCH 400: responds with bad request when req does not contain an inc_votes property on body", () => {
+      //   return request(app)
+      //     .patch("/api/articles/1")
+      //     .send({ vote: 1 })
+      //     .expect(400)
+      //     .then(({ body }) => {
+      //       expect(body.msg).to.eql("Bad request");
+      //     });
+      // });
+      it("PATCH 200: responds with no error and unchanged article when given empty body", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ vote: 1 })
-          .expect(400)
+          .send({})
+          .expect(200)
           .then(({ body }) => {
-            expect(body.msg).to.eql("Bad request");
+            expect(body.article).to.have.keys(
+              "article_id",
+              "author",
+              "title",
+              "body",
+              "topic",
+              "created_at",
+              "votes",
+              "comment_count"
+            );
           });
       });
       it("PATCH 200: ignores invalid properties on request as long as inc_votes is valid", () => {
@@ -331,6 +376,12 @@ describe("/api", () => {
           .patch("/api/articles/1")
           .send({ inc_votes: 1, name: "mitch" })
           .expect(200);
+      });
+      it("PATCH 404: responds with error when comment does not exist", () => {
+        return request(app)
+          .patch("/api/comments/99999")
+          .send({})
+          .expect(404);
       });
       it("PATCH 400: responds with bad request when inc_votes value is invalid", () => {
         return request(app)
@@ -343,6 +394,12 @@ describe("/api", () => {
       });
     });
     describe("/api/articles/:article_id/comments", () => {
+      it("PUT 405: responds with method not allowed error", () => {
+        return request(app)
+          .put("/api/articles/1/comments")
+          .send({})
+          .expect(405);
+      });
       it("POST 404: responds with not found if article does not exist", () => {
         return request(app)
           .post("/api/9999/comments")
@@ -394,13 +451,19 @@ describe("/api", () => {
       });
     });
     describe("/api/comments/:comment_id", () => {
-      it('PATCH 400: responds with bad request when req does not contain an inc_votes property on body"', () => {
+      it("PUT 405: when put request made", () => {
+        return request(app)
+          .put("/api/comments/1")
+          .send({})
+          .expect(405);
+      });
+      it("PATCH 200: responds with unchanged comment when sent a body without inc_votes", () => {
         return request(app)
           .patch("/api/comments/1")
-          .send({ vote: 1 })
-          .expect(400)
+          .send({ voteinvalid: 1 })
+          .expect(200)
           .then(({ body }) => {
-            expect(body.msg).to.eql("Bad request");
+            expect(body.comment.votes).to.eql(16);
           });
       });
       it("PATCH 200: ignores invalid properties on request as long as inc_votes is valid", () => {
@@ -409,15 +472,15 @@ describe("/api", () => {
           .send({ inc_votes: 1, name: "mitch" })
           .expect(200);
       });
-      it("PATCH 400: responds with bad request when inc_votes value is invalid", () => {
-        return request(app)
-          .patch("/api/comments/1")
-          .send({ inc_votes: "cat" })
-          .expect(400)
-          .then(({ body }) => {
-            expect(body.msg).to.eql("Invalid text representation");
-          });
-      });
+      // it("PATCH 400: responds with bad request when inc_votes value is invalid", () => {
+      //   return request(app)
+      //     .patch("/api/comments/1")
+      //     .send({ inc_votes: "cat" })
+      //     .expect(400)
+      //     .then(({ body }) => {
+      //       expect(body.msg).to.eql("Invalid text representation");
+      //     });
+      // });
       it("DELETE 404: responds with relevant message when comment to be deleted does not exist", () => {
         return request(app)
           .delete("/api/comments/99999")

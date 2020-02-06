@@ -4,8 +4,12 @@ const usersRouter = require("../routes/users.route");
 const articlesRouter = require("../routes/articles.route");
 const commentsRouter = require("../routes/comments.route");
 
+const { methodNotAllowed } = require("../errors/error_functions");
+
 apiRouter.use("/topics", topicsRouter);
 apiRouter.use("/users", usersRouter);
 apiRouter.use("/articles", articlesRouter);
 apiRouter.use("/comments", commentsRouter);
+
+apiRouter.route("/").all(methodNotAllowed);
 module.exports = apiRouter;
