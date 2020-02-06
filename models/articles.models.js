@@ -9,34 +9,42 @@ exports.fetchArticles = (
   author,
   topic
 ) => {
+  //check order is one of two values as pswl will not catch this error
   if (order !== "asc" && order !== "desc") {
     order = "desc";
   }
   return connection("articles")
     .returning("*")
     .modify(chain => {
+      //modify the chain to add .where for queries
       if (author) {
         return chain.where({ author });
       }
       if (topic) {
         return chain.where({ topic });
       }
-    })
+    }) //sort using queries or defaults
     .orderBy(sort_by, order)
     .then(articles => {
+      //if the array is empty
       if (!articles.length) {
+        //and author is given
         if (author) {
+          //return a promise containing boolean for users existence
           return userExists(author).then(bool => {
             if (!bool) {
+              //if they dont exist, send a reject
               return Promise.reject({
                 status: 404,
                 msg: "Author does not exist"
               });
             }
+            //otherwise they do exist but have not posted any articles, so send non-error message
             return { articles: "No articles found by user" };
           });
         }
         if (topic) {
+          //same process as above for topics
           return topicExists(topic).then(bool => {
             if (!bool) {
               return Promise.reject({
@@ -50,6 +58,8 @@ exports.fetchArticles = (
       }
 
       articles.forEach(article => {
+        //for each article, add a comment count using a model and delete body
+        //this could be refactored to use aggregate functions on the sql query
         const id = article.article_id;
         comment_count = fetchCommentsByArticleID(id);
         article.comment_count = comment_count;
@@ -60,14 +70,17 @@ exports.fetchArticles = (
 };
 
 exports.fetchArticle = id => {
+  //retrieve the article for given id
   return connection
     .select()
     .table("articles")
     .where("article_id", "=", id)
     .then(article => {
+      //if it's an empty array, the article does not exist
       if (!article.length) {
         return Promise.reject({ status: 404, msg: "Not found" });
       }
+      //else, format the article and return it
       return Promise.all([article, fetchCommentsByArticleID(id)]);
     })
     .then(([article, comments]) => {

@@ -338,7 +338,7 @@ describe("/api", () => {
           .send({ inc_votes: "cat" })
           .expect(400)
           .then(({ body }) => {
-            expect(body.msg).to.eql("Invalid text representation");
+            ~expect(body.msg).to.eql("Invalid text representation");
           });
       });
     });

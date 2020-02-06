@@ -3,7 +3,7 @@ exports.methodNotAllowed = (req, res, next) => {
 };
 
 exports.psqlErrors = code => {
-  console.log(code);
+  // console.log(code);
 
   const errors = {
     "22P02": { status: 400, msg: "Invalid text representation" },
