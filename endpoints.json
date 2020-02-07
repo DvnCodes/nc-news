@@ -6,7 +6,22 @@
     "description": "serves an array of all topics",
     "queries": [],
     "exampleResponse": {
-      "topics": [{ "slug": "football", "description": "Footie!" }]
+      "topics": [
+        {
+          "slug": "football",
+          "description": "Footie!"
+        }
+      ]
+    }
+  },
+  "GET /api/users/:username": {
+    "description": "serves the user object with given id",
+    "exampleResponse": {
+      "user": {
+        "username": "lurker",
+        "name": "do_nothing",
+        "avatar_url": "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
+      }
     }
   },
   "GET /api/articles": {
@@ -41,7 +56,9 @@
   },
   "PATCH /api/articles/:article_id": {
     "description": "accepts an object in the form { inc_votes: newVote }, increments votes property of given article and serves it updated",
-    "exampleRequest": { "inc_votes": "1" },
+    "exampleRequest": {
+      "inc_votes": "1"
+    },
     "exampleResponse": {
       "article": {
         "article_id": 1,
@@ -85,16 +102,25 @@
           "body": "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky."
         }
       ]
+    }
+  },
+  "POST /api/comments": {
+    "description": "accepts an object in the form { inc_votes: newVote }, increments votes property of given comment and serves it updated",
+    "exampleRequest": {
+      "inc_votes": 1
     },
-    "GET /api/users/:username": {
-      "description": "serves the user object with given id",
-      "exampleResponse": {
-        "user": {
-          "username": "lurker",
-          "name": "do_nothing",
-          "avatar_url": "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
-        }
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 1,
+        "author": "tickle122",
+        "article_id": 18,
+        "votes": 2,
+        "created_at": "2016-07-09T18:07:18.932Z",
+        "body": "Itaque quisquam est similique et est perspiciatis reprehenderit voluptatem autem. Voluptatem accusantium eius error adipisci quibusdam doloribus."
       }
     }
+  },
+  "DELETE /api/comments": {
+    "description": "deletes the given comment and responds with no content"
   }
 }

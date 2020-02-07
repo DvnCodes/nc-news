@@ -29,9 +29,6 @@ exports.patchArticleVotes = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
 
-  // if (inc_votes && typeof inc_votes !== number) {
-  //   return next({ status: 400, msg: "Bad request" });
-  // }
   updateArticleVotes(article_id, inc_votes)
     .then(article => {
       res.status(200).send(article);
@@ -58,9 +55,9 @@ exports.getComments = (req, res, next) => {
 
   fetchComments(article_id, sort_by, order)
     .then(comments => {
-      articleExists(article_id).then(bool => {
+      return articleExists(article_id).then(bool => {
         if (!bool && !comments.length) {
-          return next({ status: 404, msg: "Article not found" });
+          return Promise.reject({ status: 404, msg: "Article not found" });
         }
         res.status(200).send({ comments: comments });
       });

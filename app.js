@@ -14,12 +14,10 @@ app.all("*", (req, res, next) => {
 app.use((err, req, res, next) => {
   console.log(err);
 
-  //if the error is in the psql format send it to the error handler for this
   if (err.code !== undefined) {
     err = psqlErrors(err.code);
   }
-  //all custom errors will be handled below provided they
-  //are rejected or sent to next in the correct format
+
   if (err.status !== undefined) {
     res.status(err.status).send({ msg: err.msg });
   } else res.status(500).send({ msg: "Internal server error" });

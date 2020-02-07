@@ -3,8 +3,6 @@ const {
   removeComment
 } = require("../models/comments.models");
 
-const { commentExists } = require("../models/comments.models");
-
 exports.patchCommentVotes = (req, res, next) => {
   const { comment_id } = req.params;
   const { inc_votes } = req.body;
@@ -14,14 +12,6 @@ exports.patchCommentVotes = (req, res, next) => {
   updateCommentVotes(inc_votes, comment_id)
     .then(comment => {
       res.status(200).send(comment);
-      // commentExists(comment_id)
-      //   .then(bool => {
-      //     if (!bool && !comment.length) {
-      //       return next({ status: 404, msg: "Comment not found" });
-      //     }
-      //
-      //   })
-      //   ;
     })
     .catch(err => next(err));
 };
@@ -31,7 +21,7 @@ exports.deleteComment = (req, res, next) => {
   removeComment(comment_id)
     .then(response => {
       if (response === 0) {
-        return next({ status: 404, msg: "Comment not found" });
+        return Promise.reject({ status: 404, msg: "Comment not found" });
       }
       res.status(204).send();
     })

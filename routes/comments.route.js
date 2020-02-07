@@ -10,6 +10,6 @@ commentsRouter
   .route("/:comment_id")
   .patch(patchCommentVotes)
   .delete(deleteComment)
-  .put(methodNotAllowed);
+  .all(methodNotAllowed);
 
 module.exports = commentsRouter;
