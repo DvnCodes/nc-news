@@ -70,27 +70,32 @@ describe("/api", () => {
           expect(body.articles).to.be.descendingBy("created_at");
         });
     });
-    it.only("GET 200: has a default page limit of 10", () => {
+    it("GET 200: has a default page limit of 10", () => {
       return request(app)
         .get("/api/articles")
         .then(({ body }) => {
           expect(body.articles.length).to.eql(10);
         });
     });
-    it.only("GET 200: accepts a limit query that sets the page limit of response", () => {
+    it("GET 200: accepts a limit query that sets the page limit of response", () => {
       return request(app)
         .get("/api/articles?limit=5")
         .then(({ body }) => {
           expect(body.articles.length).to.eql(5);
         });
     });
-    it.only("GET 200: accepts a page query (p) that sets at which to start the response at (calculated using limit) ", () => {
+    it("GET 200: accepts a page query (p) that sets at which to start the response at (calculated using limit) ", () => {
       return request(app)
         .get("/api/articles?limit=1&p=12")
         .then(({ body }) => {
-          console.log(body.articles);
-
           expect(body.articles.length).to.eql(1);
+        });
+    });
+    it.only("GET 200: there is a total_count property on the response that is a count of the total articles for given request, taking into account filters", () => {
+      return request(app)
+        .get("/api/articles?limit=5")
+        .then(({ body }) => {
+          expect(body.total_count).to.eql(12);
         });
     });
     it("GET 200: responds with an array of article objects sorted/ordered and filtered by author or topic using given queries", () => {

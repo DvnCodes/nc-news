@@ -15,12 +15,15 @@ exports.fetchArticles = ({
     order = "desc";
   }
 
-  return connection
+  const totalQuery = connection
     .select("articles.*")
     .from("articles")
     .count({ comment_count: "comment_id" })
     .leftJoin("comments", "articles.article_id", "comments.article_id")
-    .groupBy("articles.article_id")
+    .groupBy("articles.article_id");
+
+  const responseQuery = totalQuery
+    .clone()
     .modify(chain => {
       if (limit !== undefined) {
         chain.limit(limit);
@@ -64,8 +67,13 @@ exports.fetchArticles = ({
       articles.forEach(article => {
         delete article.body;
       });
-      return { articles: articles };
     });
+
+  return Promise.all([totalQuery, responseQuery]).then(
+    ([rowsBeforeLimit, articles]) => {
+      return { articles: articles, total_count: rowsBeforeLimit.length };
+    }
+  );
 };
 
 exports.fetchArticle = id => {
