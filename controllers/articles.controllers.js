@@ -51,9 +51,9 @@ exports.postComment = (req, res, next) => {
 
 exports.getComments = (req, res, next) => {
   const { article_id } = req.params;
-  const { sort_by, order } = req.query;
+  const queries = req.query;
 
-  fetchComments(article_id, sort_by, order)
+  fetchComments(article_id, queries)
     .then(comments => {
       return articleExists(article_id).then(bool => {
         if (!bool && !comments.length) {

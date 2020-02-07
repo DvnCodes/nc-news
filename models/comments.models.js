@@ -27,12 +27,17 @@ exports.insertComment = (article_id, comment) => {
 
 exports.fetchComments = (
   article_id,
-  sort_by = "created_at",
-  order = "desc"
+  { sort_by = "created_at", order = "desc", limit = 10, p }
 ) => {
   return connection("comments")
     .where({ article_id })
-    .orderBy(sort_by, order);
+    .orderBy(sort_by, order)
+    .limit(limit)
+    .modify(chain => {
+      if (p) {
+        chain.offset((limit / 2) * p);
+      }
+    });
 };
 
 exports.updateCommentVotes = (inc_votes = 0, comment_id) => {

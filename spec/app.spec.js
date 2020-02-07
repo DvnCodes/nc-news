@@ -91,7 +91,7 @@ describe("/api", () => {
           expect(body.articles.length).to.eql(1);
         });
     });
-    it.only("GET 200: there is a total_count property on the response that is a count of the total articles for given request, taking into account filters", () => {
+    it("GET 200: there is a total_count property on the response that is a count of the total articles for given request, taking into account filters", () => {
       return request(app)
         .get("/api/articles?limit=5")
         .then(({ body }) => {
@@ -154,6 +154,14 @@ describe("/api", () => {
               "votes",
               "comment_count"
             );
+          });
+      });
+      it.only("GET 200: accepts and implements a limit, and page query, default limit is 10", () => {
+        return request(app)
+          .get("/api/articles/1/comments?limit=3&p=2")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comments).to.have.length(3);
           });
       });
       describe("/comments", () => {
