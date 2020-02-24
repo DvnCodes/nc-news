@@ -55,7 +55,11 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles")
         .then(({ body }) => {
+          // console.log(body);
+
           body.articles.forEach(article => {
+            // console.log(article);
+
             expect(article).to.have.keys(
               "author",
               "title",
@@ -120,6 +124,33 @@ describe("/api", () => {
           expect(body.articles).to.be.ascendingBy("votes");
         });
     });
+    it("POST 201: Accepts an article object with title, body, topic and author properties, responds with posted article", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Hello World",
+          topic: "mitch",
+          body: "Testing post article",
+          author: "butter_bridge"
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.article).to.have.keys(
+            "article_id",
+            "author",
+            "title",
+            "body",
+            "topic",
+            "created_at",
+            "votes"
+          );
+        });
+    });
+    it("DELETE 204: removes given article and returns no content", () => {
+      return request(app)
+        .delete("/api/articles/1")
+        .expect(204);
+    });
     describe("/:article_id", () => {
       it("GET 200: responds with an article onject in the correct format", () => {
         return request(app)
@@ -156,7 +187,7 @@ describe("/api", () => {
             );
           });
       });
-      it.only("GET 200: accepts and implements a limit, and page query, default limit is 10", () => {
+      it("GET 200: accepts and implements a limit, and page query, default limit is 10", () => {
         return request(app)
           .get("/api/articles/1/comments?limit=3&p=2")
           .expect(200)
@@ -285,7 +316,7 @@ describe("/api", () => {
       });
     });
     describe("/api/articles", () => {
-      it("PATCH,PUT,DELETE: reponds with 405 and method not allowed when an unsupported request is made", () => {
+      it("PATCH,DELETE: reponds with 405 and method not allowed when an unsupported request is made", () => {
         return request(app)
           .post("/api/articles")
           .send({ article: ["article"] })
@@ -294,6 +325,12 @@ describe("/api", () => {
             expect(body.msg).eql("Method not allowed");
           });
       });
+      // it.only("POST 400: responds with bad request when sent an article without all neccessary properties", () => {
+      //   return request(app)
+      //     .post("/api/articles")
+      //     .send({})
+      //     .expect(400);
+      // });
       it("GET 400: responds with psql error msg when a sort_by that does not exist is passed", () => {
         return request(app)
           .get("/api/articles?sort_by=banana")

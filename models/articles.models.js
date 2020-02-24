@@ -49,7 +49,7 @@ exports.fetchArticles = ({
                 msg: "Author does not exist"
               });
             }
-            return { articles: [] };
+            return [];
           });
         }
         if (topic) {
@@ -60,13 +60,15 @@ exports.fetchArticles = ({
                 msg: "Topic does not exist"
               });
             }
-            return { articles: [] };
+
+            return [];
           });
         }
       }
       articles.forEach(article => {
         delete article.body;
       });
+      return articles;
     });
 
   return Promise.all([totalQuery, responseQuery]).then(
