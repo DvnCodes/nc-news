@@ -1,11 +1,13 @@
 const apiRouter = require("./routes/api.route");
 const express = require("express");
 const { psqlErrors } = require("./errors/error_functions");
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
 
 app.use("/api", apiRouter);
+app.use(cors());
 
 app.all("*", (req, res, next) => {
   next({ status: 404, msg: "Not found" });
