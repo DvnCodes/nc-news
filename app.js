@@ -12,13 +12,11 @@ app.all("*", (req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  console.log(err);
+  // console.log(err);
 
   if (err.code !== undefined) {
     err = psqlErrors(err.code);
-  }
-
-  if (err.status !== undefined) {
+  } else if (err.status !== undefined) {
     res.status(err.status).send({ msg: err.msg });
   } else res.status(500).send({ msg: "Internal server error" });
 });

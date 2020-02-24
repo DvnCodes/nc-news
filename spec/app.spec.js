@@ -51,10 +51,12 @@ describe("/api", () => {
     });
   });
   describe("/articles", () => {
-    it("GET 200: responds with an array of article objects sorted by date desc by default", () => {
+    it.only("GET 200: responds with an array of article objects sorted by date desc by default", () => {
       return request(app)
         .get("/api/articles")
         .then(({ body }) => {
+          console.log(body);
+
           body.articles.forEach(article => {
             expect(article).to.have.keys(
               "author",
@@ -104,6 +106,9 @@ describe("/api", () => {
           "/api/articles?sorted_by=votes&order=asc&author=butter_bridge&topic=mitch"
         )
         .then(({ body }) => {
+          console.log(body);
+
+          body;
           body.articles.forEach(article => {
             expect(article).to.have.keys(
               "author",
@@ -156,7 +161,7 @@ describe("/api", () => {
             );
           });
       });
-      it.only("GET 200: accepts and implements a limit, and page query, default limit is 10", () => {
+      it("GET 200: accepts and implements a limit, and page query, default limit is 10", () => {
         return request(app)
           .get("/api/articles/1/comments?limit=3&p=2")
           .expect(200)
