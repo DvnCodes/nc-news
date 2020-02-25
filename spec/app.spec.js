@@ -104,11 +104,13 @@ describe("/api", () => {
     });
     it("GET 200: responds with an array of article objects sorted/ordered and filtered by author or topic using given queries", () => {
       return request(app)
-        .get(
-          "/api/articles?sorted_by=votes&order=asc&author=butter_bridge&topic=mitch"
-        )
+        .get("/api/articles?author=butter_bridge&topic=mitch")
         .then(({ body }) => {
+          expect(body.articles).not.eql([]);
+          expect(body.articles).to.be.descendingBy("votes");
           body.articles.forEach(article => {
+            expect(article.author).to.eql("butter_bridge");
+            expect(article.topic).to.eql("mitch");
             expect(article).to.have.keys(
               "author",
               "title",
@@ -118,10 +120,15 @@ describe("/api", () => {
               "votes",
               "comment_count"
             );
-            expect(article.author).to.eql("butter_bridge");
-            expect(article.topic).to.eql("mitch");
           });
-          expect(body.articles).to.be.ascendingBy("votes");
+        });
+    });
+    it("GET 200: responds with an array of article objects sorted by comment count", () => {
+      return request(app)
+        .get("/api/articles?sort_by=comment_count")
+        .then(({ body }) => {
+          expect(body.articles).not.eql([]);
+          expect(body.articles).to.be.descendingBy("votes");
         });
     });
     it("POST 201: Accepts an article object with title, body, topic and author properties, responds with posted article", () => {

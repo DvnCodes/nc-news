@@ -11,7 +11,7 @@ exports.fetchArticles = ({
   p,
   limit = 10
 }) => {
-  if (order !== "asc" && order !== "desc") {
+  if (order === undefined) {
     order = "desc";
   }
 
@@ -31,11 +31,11 @@ exports.fetchArticles = ({
       if (p !== undefined) {
         chain.offset((limit / 2) * p);
       }
-      if (author !== undefined) {
-        chain.where("username" === author);
+      if (author) {
+        chain.where("articles.author", author);
       }
-      if (topic !== undefined) {
-        chain.andWhere({ topic });
+      if (topic) {
+        chain.andWhere("articles.topic", topic);
       }
     })
     .orderBy(sort_by, order)
