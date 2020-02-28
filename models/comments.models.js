@@ -70,5 +70,8 @@ exports.commentExists = id => {
         return true;
       }
       return false;
+    })
+    .catch(err => {
+      return console.log(err);
     });
 };

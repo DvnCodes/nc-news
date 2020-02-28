@@ -121,3 +121,12 @@ exports.articleExists = id => {
       return false;
     });
 };
+
+exports.addArticle = ({ article }) => {
+  return connection("articles")
+    .insert(article)
+    .returning("*")
+    .then(article => {
+      return { article: article[0] };
+    });
+};

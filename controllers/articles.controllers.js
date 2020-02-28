@@ -2,7 +2,8 @@ const {
   fetchArticles,
   fetchArticle,
   updateArticleVotes,
-  articleExists
+  articleExists,
+  addArticle
 } = require("../models/articles.models");
 
 const { insertComment, fetchComments } = require("../models/comments.models");
@@ -61,6 +62,18 @@ exports.getComments = (req, res, next) => {
         }
         res.status(200).send({ comments: comments });
       });
+    })
+    .catch(err => next(err));
+};
+
+exports.postArticle = (req, res, next) => {
+  const article = req.body;
+  if (!article.title || !article.body || !article.topic || !article.author) {
+    return next({ status: 400, msg: "Bad request" });
+  }
+  addArticle(article)
+    .then(article => {
+      res.status(201).send(article);
     })
     .catch(err => next(err));
 };
