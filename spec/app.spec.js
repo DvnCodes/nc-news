@@ -155,7 +155,7 @@ describe("/api", () => {
           );
         });
     });
-    it("DELETE 204: removes given article and returns no content", () => {
+    it.only("DELETE 204: removes given article and returns no content", () => {
       return request(app)
         .delete("/api/articles/1")
         .expect(204);

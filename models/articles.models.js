@@ -130,3 +130,10 @@ exports.addArticle = ({ article }) => {
       return { article: article[0] };
     });
 };
+
+exports.removeArticle = article_id => {
+  return connection("articles")
+    .where({ article_id })
+    .del()
+    .then(deletedRows => deletedRows);
+};
