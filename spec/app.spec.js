@@ -135,10 +135,12 @@ describe("/api", () => {
       return request(app)
         .post("/api/articles")
         .send({
-          title: "Hello World",
-          topic: "mitch",
-          body: "Testing post article",
-          author: "butter_bridge"
+          article: {
+            title: "Hello World",
+            topic: "mitch",
+            body: "Testing post article",
+            author: "butter_bridge"
+          }
         })
         .expect(201)
         .then(({ body }) => {
@@ -323,9 +325,9 @@ describe("/api", () => {
       });
     });
     describe("/api/articles", () => {
-      it("PATCH,DELETE: reponds with 405 and method not allowed when an unsupported request is made", () => {
+      it("PATCH: reponds with 405 and method not allowed when an unsupported request is made", () => {
         return request(app)
-          .post("/api/articles")
+          .patch("/api/articles")
           .send({ article: ["article"] })
           .expect(405)
           .then(({ body }) => {

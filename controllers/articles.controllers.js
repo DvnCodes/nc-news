@@ -73,6 +73,8 @@ exports.postArticle = (req, res, next) => {
   // }
   addArticle(article)
     .then(article => {
+      console.log(article);
+
       res.status(201).send(article);
     })
     .catch(err => next(err));
