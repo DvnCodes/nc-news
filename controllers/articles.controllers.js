@@ -68,9 +68,9 @@ exports.getComments = (req, res, next) => {
 
 exports.postArticle = (req, res, next) => {
   const article = req.body;
-  if (!article.title || !article.body || !article.topic || !article.author) {
-    return next({ status: 400, msg: "Bad request" });
-  }
+  // if (!article.title || !article.body || !article.topic || !article.author) {
+  //   return next({ status: 400, msg: "Bad request" });
+  // }
   addArticle(article)
     .then(article => {
       res.status(201).send(article);
