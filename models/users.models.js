@@ -1,21 +1,30 @@
 const connection = require("../db/connection");
 
-exports.fetchUser = username => {
+exports.fetchUsers = () => {
+  return connection
+    .select("*")
+    .table("users")
+    .then((users) => {
+      return { users };
+    });
+};
+
+exports.fetchUser = (username) => {
   return connection
     .select()
     .table("users")
     .where("username", "=", username)
-    .then(user => {
+    .then((user) => {
       return { user: user[0] };
     });
 };
 
-exports.userExists = username => {
+exports.userExists = (username) => {
   return connection
     .select()
     .table("users")
     .where({ username })
-    .then(user => {
+    .then((user) => {
       if (user.length) {
         return true;
       }

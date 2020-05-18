@@ -26,8 +26,8 @@ describe("/api", () => {
       return request(app)
         .get("/api/topics")
         .expect(200)
-        .then(response => {
-          response.body.topics.forEach(topic => {
+        .then((response) => {
+          response.body.topics.forEach((topic) => {
             expect(topic).to.have.keys("slug", "description");
           });
         });
@@ -38,14 +38,14 @@ describe("/api", () => {
       return request(app)
         .get("/api/users/lurker")
         .expect(200)
-        .then(response => {
+        .then((response) => {
           expect(response.body).to.eql({
             user: {
               username: "lurker",
               name: "do_nothing",
               avatar_url:
-                "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
-            }
+                "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png",
+            },
           });
         });
     });
@@ -57,7 +57,7 @@ describe("/api", () => {
         .then(({ body }) => {
           console.log(body);
 
-          body.articles.forEach(article => {
+          body.articles.forEach((article) => {
             expect(article).to.have.keys(
               "author",
               "title",
@@ -109,7 +109,7 @@ describe("/api", () => {
           console.log(body);
 
           body;
-          body.articles.forEach(article => {
+          body.articles.forEach((article) => {
             expect(article).to.have.keys(
               "author",
               "title",
@@ -130,7 +130,7 @@ describe("/api", () => {
         return request(app)
           .get("/api/articles/1")
           .expect(200)
-          .then(response => {
+          .then((response) => {
             expect(response.body.article).to.have.keys(
               "article_id",
               "author",
@@ -148,7 +148,7 @@ describe("/api", () => {
           .patch("/api/articles/1")
           .send({ inc_votes: 1 })
           .expect(200)
-          .then(response => {
+          .then((response) => {
             expect(response.body.article).to.have.keys(
               "article_id",
               "author",
@@ -175,7 +175,7 @@ describe("/api", () => {
             .post("/api/articles/1/comments")
             .send({
               username: "lurker",
-              body: "testing..."
+              body: "testing...",
             })
             .expect(201)
             .then(({ body }) => {
@@ -196,7 +196,7 @@ describe("/api", () => {
             .then(({ body }) => {
               // console.log(JSON.stringify(body));
 
-              body.comments.forEach(comment => {
+              body.comments.forEach((comment) => {
                 expect(comment).have.keys(
                   "comment_id",
                   "author",
@@ -206,7 +206,7 @@ describe("/api", () => {
                   "body"
                 );
                 expect(body.comments).to.be.sortedBy("created_at", {
-                  descending: true
+                  descending: true,
                 });
               });
             });
@@ -216,7 +216,7 @@ describe("/api", () => {
             .get("/api/articles/1/comments?sort_by=votes&order=asc")
             .expect(200)
             .then(({ body }) => {
-              body.comments.forEach(comment => {
+              body.comments.forEach((comment) => {
                 expect(comment).have.keys(
                   "comment_id",
                   "author",
@@ -226,7 +226,7 @@ describe("/api", () => {
                   "body"
                 );
                 expect(body.comments).to.be.sortedBy("votes", {
-                  ascending: true
+                  ascending: true,
                 });
               });
             });
@@ -259,9 +259,7 @@ describe("/api", () => {
           });
       });
       it("DELETE: 204 deletes the given comment and responds with no content", () => {
-        return request(app)
-          .delete("/api/comments/1")
-          .expect(204);
+        return request(app).delete("/api/comments/1").expect(204);
       });
     });
   });
@@ -284,9 +282,7 @@ describe("/api", () => {
     });
     describe("/api", () => {
       it("DELETE 405: responds with method not allowed", () => {
-        return request(app)
-          .delete("/api")
-          .expect(405);
+        return request(app).delete("/api").expect(405);
       });
     });
     describe("/api/articles", () => {
@@ -309,9 +305,7 @@ describe("/api", () => {
       });
 
       it("GET 200: reverts to default order when order query is not asc or desc", () => {
-        return request(app)
-          .get("/api/articles?order=banana")
-          .expect(200);
+        return request(app).get("/api/articles?order=banana").expect(200);
       });
 
       it("GET 404: responds with not found when querying an author that does not exist", () => {
@@ -381,9 +375,7 @@ describe("/api", () => {
     });
     describe("/api/articles/:article_id", () => {
       it("PUT 405: expect method not allowed when put request is made", () => {
-        return request(app)
-          .put("/api/articles/1")
-          .expect(405);
+        return request(app).put("/api/articles/1").expect(405);
       });
       it("GET 400: an invalid article id responds with bad request", () => {
         return request(app)
@@ -465,7 +457,7 @@ describe("/api", () => {
           .post("/api/9999/comments")
           .send({
             username: "NorthCoder94",
-            body: "this should be an error..."
+            body: "this should be an error...",
           })
           .expect(404)
           .then(({ body }) => {
@@ -486,7 +478,7 @@ describe("/api", () => {
           .post("/api/articles/1/comments")
           .send({
             username: "john smith",
-            body: "I'm having an existential crisis"
+            body: "I'm having an existential crisis",
           })
           .expect(404)
           .then(({ body }) => {
@@ -512,10 +504,7 @@ describe("/api", () => {
     });
     describe("/api/comments/:comment_id", () => {
       it("PUT 405: when put request made", () => {
-        return request(app)
-          .put("/api/comments/1")
-          .send({})
-          .expect(405);
+        return request(app).put("/api/comments/1").send({}).expect(405);
       });
       it("PATCH 200: responds with unchanged comment when sent a body without inc_votes", () => {
         return request(app)
