@@ -9,9 +9,9 @@ exports.fetchArticles = ({
   author,
   topic,
   p,
-  limit = 10
+  limit = 10,
 }) => {
-  if (order !== "asc" && order !== "desc") {
+  if (order === undefined) {
     order = "desc";
   }
 
@@ -24,40 +24,40 @@ exports.fetchArticles = ({
 
   const responseQuery = totalQuery
     .clone()
-    .modify(chain => {
+    .modify((chain) => {
       if (limit !== undefined) {
         chain.limit(limit);
       }
       if (p !== undefined) {
         chain.offset((limit / 2) * p);
       }
-      if (author !== undefined) {
-        chain.where("username" === author);
+      if (author) {
+        chain.where("articles.author", author);
       }
-      if (topic !== undefined) {
-        chain.andWhere({ topic });
+      if (topic) {
+        chain.andWhere("articles.topic", topic);
       }
     })
     .orderBy(sort_by, order)
-    .then(articles => {
+    .then((articles) => {
       if (!articles.length) {
         if (author) {
-          return userExists(author).then(bool => {
+          return userExists(author).then((bool) => {
             if (!bool) {
               return Promise.reject({
                 status: 404,
-                msg: "Author does not exist"
+                msg: "Author does not exist",
               });
             }
             return [];
           });
         }
         if (topic) {
-          return topicExists(topic).then(bool => {
+          return topicExists(topic).then((bool) => {
             if (!bool) {
               return Promise.reject({
                 status: 404,
-                msg: "Topic does not exist"
+                msg: "Topic does not exist",
               });
             }
             return [];
@@ -65,7 +65,7 @@ exports.fetchArticles = ({
         }
       }
 
-      articles.forEach(article => {
+      articles.forEach((article) => {
         delete article.body;
       });
       return articles;
@@ -80,12 +80,12 @@ exports.fetchArticles = ({
   );
 };
 
-exports.fetchArticle = id => {
+exports.fetchArticle = (id) => {
   return connection
     .select()
     .table("articles")
     .where("article_id", "=", id)
-    .then(article => {
+    .then((article) => {
       if (!article.length) {
         return Promise.reject({ status: 404, msg: "Not found" });
       }
@@ -102,7 +102,7 @@ exports.updateArticleVotes = (article_id, inc_votes = 0) => {
     .where({ article_id })
     .increment("votes", inc_votes)
     .returning("*")
-    .then(article => {
+    .then((article) => {
       return Promise.all([article, fetchCommentsByArticleID(article_id)]);
     })
     .then(([article, comments]) => {
@@ -111,15 +111,31 @@ exports.updateArticleVotes = (article_id, inc_votes = 0) => {
     });
 };
 
-exports.articleExists = id => {
+exports.articleExists = (id) => {
   return connection
     .select()
     .table("articles")
     .where("article_id", "=", id)
-    .then(article => {
+    .then((article) => {
       if (article.length) {
         return true;
       }
       return false;
     });
+};
+
+exports.addArticle = ({ article }) => {
+  return connection("articles")
+    .insert(article)
+    .returning("*")
+    .then((article) => {
+      return { article: article[0] };
+    });
+};
+
+exports.removeArticle = (article_id) => {
+  return connection("articles")
+    .where({ article_id })
+    .del()
+    .then((deletedRows) => deletedRows);
 };

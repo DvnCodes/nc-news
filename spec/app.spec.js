@@ -55,9 +55,11 @@ describe("/api", () => {
       return request(app)
         .get("/api/articles")
         .then(({ body }) => {
-          console.log(body);
+          // console.log(body);
 
           body.articles.forEach((article) => {
+            // console.log(article);
+
             expect(article).to.have.keys(
               "author",
               "title",
@@ -102,14 +104,13 @@ describe("/api", () => {
     });
     it("GET 200: responds with an array of article objects sorted/ordered and filtered by author or topic using given queries", () => {
       return request(app)
-        .get(
-          "/api/articles?sorted_by=votes&order=asc&author=butter_bridge&topic=mitch"
-        )
+        .get("/api/articles?author=butter_bridge&topic=mitch")
         .then(({ body }) => {
-          console.log(body);
-
-          body;
+          expect(body.articles).not.eql([]);
+          expect(body.articles).to.be.descendingBy("votes");
           body.articles.forEach((article) => {
+            expect(article.author).to.eql("butter_bridge");
+            expect(article.topic).to.eql("mitch");
             expect(article).to.have.keys(
               "author",
               "title",
@@ -119,11 +120,43 @@ describe("/api", () => {
               "votes",
               "comment_count"
             );
-            expect(article.author).to.eql("butter_bridge");
-            expect(article.topic).to.eql("mitch");
           });
-          expect(body.articles).to.be.ascendingBy("votes");
         });
+    });
+    it("GET 200: responds with an array of article objects sorted by comment count", () => {
+      return request(app)
+        .get("/api/articles?sort_by=comment_count")
+        .then(({ body }) => {
+          expect(body.articles).not.eql([]);
+          expect(body.articles).to.be.descendingBy("votes");
+        });
+    });
+    it("POST 201: Accepts an article object with title, body, topic and author properties, responds with posted article", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          article: {
+            title: "Hello World",
+            topic: "mitch",
+            body: "Testing post article",
+            author: "butter_bridge",
+          },
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.article).to.have.keys(
+            "article_id",
+            "author",
+            "title",
+            "body",
+            "topic",
+            "created_at",
+            "votes"
+          );
+        });
+    });
+    it.only("DELETE 204: removes given article and returns no content", () => {
+      return request(app).delete("/api/articles/1").expect(204);
     });
     describe("/:article_id", () => {
       it("GET 200: responds with an article onject in the correct format", () => {
@@ -286,15 +319,21 @@ describe("/api", () => {
       });
     });
     describe("/api/articles", () => {
-      it("PATCH,PUT,DELETE: reponds with 405 and method not allowed when an unsupported request is made", () => {
+      it("PATCH: reponds with 405 and method not allowed when an unsupported request is made", () => {
         return request(app)
-          .post("/api/articles")
+          .patch("/api/articles")
           .send({ article: ["article"] })
           .expect(405)
           .then(({ body }) => {
             expect(body.msg).eql("Method not allowed");
           });
       });
+      // it.only("POST 400: responds with bad request when sent an article without all neccessary properties", () => {
+      //   return request(app)
+      //     .post("/api/articles")
+      //     .send({})
+      //     .expect(400);
+      // });
       it("GET 400: responds with psql error msg when a sort_by that does not exist is passed", () => {
         return request(app)
           .get("/api/articles?sort_by=banana")
