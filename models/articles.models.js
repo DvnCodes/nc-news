@@ -73,8 +73,6 @@ exports.fetchArticles = ({
 
   return Promise.all([totalQuery, responseQuery]).then(
     ([rowsBeforeLimit, articles]) => {
-      console.log(articles);
-
       return { articles: articles, total_count: rowsBeforeLimit.length };
     }
   );
